@@ -1,0 +1,76 @@
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow-x:hidden; }
+  * { box-sizing: border-box; }
+  #root { height:100vh; }
+  /* Re-assert absolute positioning on the floating milestone icon buttons
+     (edit/label/duplicate/remove) in case host-page CSS overrides it. */
+  #root button[style*="absolute"] {
+    position: absolute !important;
+  }
+  /* Prevent host-page min-width/min-height rules from stretching the
+     small circular icon buttons into ellipses. */
+  #root button {
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+</style>
+<div id="root"></div>
+<script>
+(function(){
+  document.addEventListener('submit', function(e){
+    var root = document.getElementById('root');
+    if (root && root.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  var root = document.getElementById('root');
+  if (!root) return;
+
+  function disown(el){
+    var t = el.tagName;
+    if (t === 'BUTTON' || t === 'INPUT' || t === 'SELECT' || t === 'TEXTAREA') {
+      if (!el.hasAttribute('form')) el.setAttribute('form', '__oh_no_form__');
+    }
+  }
+  function scan(node){
+    if (!node || node.nodeType !== 1) return;
+    disown(node);
+    var els = node.querySelectorAll('button, input, select, textarea');
+    for (var i = 0; i < els.length; i++) disown(els[i]);
+  }
+
+  scan(root);
+  var mo = new MutationObserver(function(mutations){
+    for (var i = 0; i < mutations.length; i++) {
+      var added = mutations[i].addedNodes;
+      for (var j = 0; j < added.length; j++) scan(added[j]);
+    }
+  });
+  mo.observe(root, { childList: true, subtree: true });
+
+  // Size the app to exactly the space actually available (viewport minus
+  // SharePoint's own top bar/ribbon and left nav), rather than assuming
+  // 100vh/100vw, which ignore the app's offset within the page.
+  function fitToViewport(){
+    var appEl = root.firstElementChild;
+    if (!appEl) return;
+    var rect = root.getBoundingClientRect();
+    var availH = Math.max(200, window.innerHeight - rect.top);
+    var availW = Math.max(200, window.innerWidth - rect.left);
+    appEl.style.height = availH + 'px';
+    appEl.style.width = availW + 'px';
+    appEl.style.maxWidth = availW + 'px';
+  }
+
+  var fitTimer = setInterval(function(){
+    if (root.firstElementChild) { fitToViewport(); clearInterval(fitTimer); }
+  }, 50);
+  window.addEventListener('resize', fitToViewport);
+  window.addEventListener('load', fitToViewport);
+})();
+</script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://trw1.sharepoint.com/sites/Off-Highway/Shared%20Documents/app.js?v=6"></script>
