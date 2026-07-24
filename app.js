@@ -158,7 +158,7 @@ window.__ohInitApp = () => {
   };
 
   /* --- SharePoint REST API Utilities --- */
-  var SP_FOLDER = "/sites/Off-Highway/Shared Documents";
+  var SP_FOLDER = "/sites/Off-Highway/Shared Documents/Milestone Plan";
   var getDigest = async () => {
     var t = document.getElementById("__REQUESTDIGEST");
     if (t && t.value) return t.value;
@@ -623,6 +623,17 @@ window.__ohInitApp = () => {
       return () => e.removeEventListener("wheel", o);
     }, []);
 
+    let projectFilterOptions = (0, u.useMemo)(() => {
+      let map = new Map();
+      for (let e of t) {
+        let key = e._originalId || e.id;
+        if (!map.has(key)) {
+          map.set(key, { value: key, prefix: key, label: e.name });
+        }
+      }
+      return Array.from(map.values());
+    }, [t]);
+
     let Z = (0, u.useMemo)(() => Vt(t), [t]),
       je = (0, u.useMemo)(() => Gt(Z), [Z]),
       Fe = (0, u.useMemo)(() => {
@@ -642,7 +653,7 @@ window.__ohInitApp = () => {
       }, [Z]),
       Mt = (0, u.useMemo)(() => (C === "month" ? je.map((e) => e.day) : Fe.map((e) => e.dayOffset)), [C, je, Fe]),
       [j, te] = (0, u.useState)(null),
-      de = t.filter((e) => !( (p.size > 0 && !p.has(e.id)) || (a.manager && !e.manager.toLowerCase().includes(a.manager.toLowerCase())) || (a.cluster && !e.cluster.toLowerCase().includes(a.cluster.toLowerCase())) )),
+      de = t.filter((e) => !( (p.size > 0 && !p.has(e._originalId || e.id)) || (a.manager && !e.manager.toLowerCase().includes(a.manager.toLowerCase())) || (a.cluster && !e.cluster.toLowerCase().includes(a.cluster.toLowerCase())) )),
       Dt = p.size > 0 || a.manager || a.cluster,
       Tt = (0, u.useCallback)((e, o, i, l) => {
         e.preventDefault(), e.stopPropagation(), (ve.current = !1);
@@ -753,7 +764,7 @@ window.__ohInitApp = () => {
     let isComparing = activeBaselines.size > 1;
 
     let Ot = async () => {
-      if (isComparing) return; // safeguard
+      if (isComparing) return;
       let fnm = `oh-milestone-plan-${getSpTimestamp()}.json`;
       m(!0);
       try {
@@ -843,7 +854,7 @@ window.__ohInitApp = () => {
         "div",
         { style: { flexShrink: 0, background: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "8px 20px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" } },
         React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, color: "#94a3b8" } }, React.createElement(no, null), React.createElement("span", { style: { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em" } }, "Filter")),
-        React.createElement(lo, { triggerLabel: "Projects", count: p.size, options: t.map((e) => ({ value: e.id, prefix: e._originalId || e.id, label: e.name })), selected: p, onToggle: (e) => g((o) => { let i = new Set(o); return i.has(e) ? i.delete(e) : i.add(e), i; }), onClear: () => g(new Set()), emptyText: "No projects" }),
+        React.createElement(lo, { triggerLabel: "Projects", count: p.size, options: projectFilterOptions, selected: p, onToggle: (e) => g((o) => { let i = new Set(o); return i.has(e) ? i.delete(e) : i.add(e), i; }), onClear: () => g(new Set()), emptyText: "No projects" }),
         [{ k: "manager", ph: "Manager\u2026", w: 120 }, { k: "cluster", ph: "Cluster\u2026", w: 108 }].map((e) => React.createElement("input", { key: e.k, type: "text", placeholder: e.ph, value: a[e.k], onChange: (o) => d((i) => ({ ...i, [e.k]: o.target.value })), onClick: (o) => o.stopPropagation(), style: { ...k, width: e.w, padding: "5px 9px", fontSize: 11 }, onFocus: (o) => (o.target.style.borderColor = "#1d4ed8"), onBlur: (o) => (o.target.style.borderColor = "#d1d9e6") })),
         React.createElement(so, { baselines: y, activeBaselines: activeBaselines, onToggle: handleToggleBaseline, fileRef: Ge }),
         Dt && React.createElement("button", { onClick: () => { g(new Set()), d({ manager: "", cluster: "" }); }, style: { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#64748b", background: "none", border: "none", cursor: "pointer" }, onMouseEnter: (e) => (e.currentTarget.style.color = "#1e293b"), onMouseLeave: (e) => (e.currentTarget.style.color = "#64748b") }, React.createElement(he, { s: 10 }), " Clear all"),
